@@ -2,7 +2,7 @@
 Select count(*) as Cantidad from Productos
 
 --2) La cantidad de productos registrados que requieran se�a.
-Select count(*) as RequierenSe�a from Productos where Seña = 1 
+Select count(*) as RequierenSeña from Productos where Seña = 1 
 
 --3) La cantidad de productos que registren un Precio Mayorista
 Select count(*) as CantidadPrecioMayorista from Productos where PVM IS NOT NULL
