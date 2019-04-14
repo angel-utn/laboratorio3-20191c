@@ -1,8 +1,8 @@
 --1) La cantidad de productos registrados.
 Select count(*) as Cantidad from Productos
 
---2) La cantidad de productos registrados que requieran seña.
-Select count(*) as RequierenSeña from Productos where Seña = 1 
+--2) La cantidad de productos registrados que requieran seï¿½a.
+Select count(*) as RequierenSeï¿½a from Productos where Seï¿½a = 1 
 
 --3) La cantidad de productos que registren un Precio Mayorista
 Select count(*) as CantidadPrecioMayorista from Productos where PVM IS NOT NULL
@@ -12,16 +12,16 @@ Select count(PVM) AS CantidadPrecioMayorista from Productos
 --4) El total recaudado en concepto de pedidos (indistantemente del pago).
 select sum(costo) as Total from Pedidos
 
---5) El promedio de costos de envío. 
+--5) El promedio de costos de envï¿½o. 
 Select avg(costo) as Promedio from Envios
 
---6) El promedio de recaudación de pedidos que hayan sido pagados.
+--6) El promedio de recaudaciï¿½n de pedidos que hayan sido pagados.
 Select avg(costo) as Promedio from Pedidos where Pago = 1
 
---7) El precio más elevado de los productos.
+--7) El precio mï¿½s elevado de los productos.
 Select Max(Precio) as MasCaro from Productos
 
---8) El menor costo de los envíos.
+--8) El menor costo de los envï¿½os.
 Select Min(Costo) as MasBarato from Envios
 
 --9) Por cada cliente, el apellido y nombre del cliente y la cantidad de pedidos realizados.
@@ -34,7 +34,7 @@ Select C.Apellidos, C.Nombres, Sum(Costo) AS TotalPedidos From Clientes as C
 Inner Join Pedidos as P ON P.IDCLIENTE = C.ID
 Group by C.APELLIDOS, C.NOMBRES
 
---11) Por cada categoría de producto la cantidad de productos que pertenecen a cada categoría. Listar Nombre de la categoría y cantidad.
+--11) Por cada categorï¿½a de producto la cantidad de productos que pertenecen a cada categorï¿½a. Listar Nombre de la categorï¿½a y cantidad.
 Select C.NOMBRE, Count(*) as CantProductos From CATEGORIAS as C
 Inner join Productos aS P ON C.ID = P.IDCATEGORIA
 Group by C.nombre
@@ -44,33 +44,33 @@ Select M.NOMBRE, Count(P.IDMATERIAL) as CantProductos From Materiales as M
 Left join Productos aS P ON M.ID = P.IDMaterial
 Group by M.nombre
 
---13) Por cada producto, la cantidad total recaudada en concepto de pedidos. Listar la descripción del producto y el total recaudado.
+--13) Por cada producto, la cantidad total recaudada en concepto de pedidos. Listar la descripciï¿½n del producto y el total recaudado.
 Select P.Descripcion, Sum(Costo) as Total From Productos as P
 Inner Join Pedidos as PE ON P.ID = PE.IDPRODUCTO
 Group By P.DESCRIPCION
 
 
---14) Por cada categoría de producto el precio máximo del producto asociado a esa categoría. Listar el nombre de la categoría y el precio máximo encontrado.
+--14) Por cada categorï¿½a de producto el precio mï¿½ximo del producto asociado a esa categorï¿½a. Listar el nombre de la categorï¿½a y el precio mï¿½ximo encontrado.
 Select C.Nombre, Max(Precio) As PrecioMaximo From Productos as P
 Inner Join Categorias as C ON C.ID = P.IDCATEGORIA
 Group By C.NOMBRE
 
---15) Por cada pedido, listar el código de pedido y la cantidad de colaboradores que trabajaron en él.
+--15) Por cada pedido, listar el cï¿½digo de pedido y la cantidad de colaboradores que trabajaron en ï¿½l.
 Select PE.ID, Count(*) as CantidadColaboradores FROM Pedidos as PE
 Inner Join Colaboradores_x_Pedido AS CXP ON CXP.IDPEDIDO = PE.ID
 Group by PE.ID
 
---16) Por cada colaborador, listar la cantidad de veces que realizó colaboraciones en pedidos.
+--16) Por cada colaborador, listar la cantidad de veces que realizï¿½ colaboraciones en pedidos.
 Select C.Apellido, C.Nombres, Count(*) as CantidadColaboraciones From COLABORADORES as C
 INNER JOIN COLABORADORES_X_PEDIDO as CXP ON CXP.LEGAJO = C.LEGAJO
 Group by C.Apellido, C.Nombres
 
---17) Por cada colaborador, listar la cantidad de veces que realizó colaboraciones en pedidos distintos.
+--17) Por cada colaborador, listar la cantidad de veces que realizï¿½ colaboraciones en pedidos distintos.
 Select C.Apellido, C.Nombres, Count(Distinct CXP.IDPEDIDO) as CantidadColaboraciones From COLABORADORES as C
 INNER JOIN COLABORADORES_X_PEDIDO as CXP ON CXP.LEGAJO = C.LEGAJO
 Group by C.Apellido, C.Nombres
 
---18) Listar los nombres de las tareas que se hayan llevado a cabo más de dos veces entre todos los pedidos.
+--18) Listar los nombres de las tareas que se hayan llevado a cabo mï¿½s de dos veces entre todos los pedidos.
 Select T.Nombre, count(*) AS Cantidad From Tareas as T
 Inner Join COLABORADORES_X_PEDIDO as CXP ON CXP.IDTAREA = T.ID
 Group by T.NOMBRE
@@ -89,25 +89,25 @@ Where P.Pago = 0
 Group by C.APELLIDOS, C.NOMBRES
 Having Count(P.ID) >= 1
 
--- 21) Los nombre de categorías de productos cuyo precio promedio de los productos asociados a la categoría superen el valor de $5000.
+-- 21) Los nombre de categorï¿½as de productos cuyo precio promedio de los productos asociados a la categorï¿½a superen el valor de $5000.
 Select C.Nombre, AVG(P.Precio) as PPromedio From PRODUCTOS AS P
 Inner Join Categorias as C ON C.ID = P.IDCATEGORIA
 Group by C.NOMBRE
 Having AVG(P.Precio) > 5000
 
--- 22) Por cada pedido, la cantidad de colaboraciones distintas que recibió. Listar el IDPedido y la cantidad de colaboraciones.
+-- 22) Por cada pedido, la cantidad de colaboraciones distintas que recibiï¿½. Listar el IDPedido y la cantidad de colaboraciones.
 Select PE.ID, Count(Distinct CxP.LEGAJO) AS Cantidad From Pedidos as PE
 Inner Join COLABORADORES_X_PEDIDO as CXP ON CXP.IDPEDIDO = PE.ID
 Group by PE.ID
 
--- 23) Por cada cliente, la cantidad de productos de cada material que compró. Listar el apellido y nombre del cliente, el nombre del material y la cantidad de productos de ese material que compró.
+-- 23) Por cada cliente, la cantidad de productos de cada material que comprï¿½. Listar el apellido y nombre del cliente, el nombre del material y la cantidad de productos de ese material que comprï¿½.
 Select C.Apellidos, C.Nombres, M.Nombre, Count(*) as Cantidad From Clientes as C
 Inner Join Pedidos as PE ON PE.IDCLIENTE = C.ID
 Inner Join PRODUCTOS AS PR ON PR.ID = PE.IDPRODUCTO
 Inner Join MATERIALES as M ON M.ID = PR.IDMATERIAL
 Group by C.APELLIDOS, C.NOMBRES, M.NOMBRE
 
--- 24) Apellido y nombres de los clientes que hayan pedido más de un producto del mismo material.
+-- 24) Apellido y nombres de los clientes que hayan pedido mï¿½s de un producto del mismo material.
 Select C.Apellidos, C.Nombres as Cantidad From Clientes as C
 Inner Join Pedidos as PE ON PE.IDCLIENTE = C.ID
 Inner Join PRODUCTOS AS PR ON PR.ID = PE.IDPRODUCTO
@@ -115,7 +115,7 @@ Inner Join MATERIALES as M ON M.ID = PR.IDMATERIAL
 Group by C.APELLIDOS, C.NOMBRES, M.NOMBRE
 Having Count(*) > 1
 
--- 25) Apellido y nombres del cliente que haya pedido más productos de un mismo material
+-- 25) Apellido y nombres del cliente que haya pedido mï¿½s productos de un mismo material
 Select Top 1 C.Apellidos, C.Nombres, M.Nombre, Count(*) as Cantidad From Clientes as C
 Inner Join Pedidos as PE ON PE.IDCLIENTE = C.ID
 Inner Join PRODUCTOS AS PR ON PR.ID = PE.IDPRODUCTO
@@ -123,8 +123,8 @@ Inner Join MATERIALES as M ON M.ID = PR.IDMATERIAL
 Group by C.APELLIDOS, C.NOMBRES, M.NOMBRE
 Order by Cantidad Desc
 
--- 26) La cantidad de clientes distintos que compraron productos que no requieren seña.
-Select Count(PE.IdCliente) As Cantidad From Pedidos as PE
+-- 26) La cantidad de clientes distintos que compraron productos que no requieren seï¿½a.
+Select Count(Distinct PE.IdCliente) As Cantidad From Pedidos as PE
 Inner Join Clientes as C ON PE.IDCLIENTE = C.ID
 Inner Join Productos as P ON P.ID = PE.IDPRODUCTO
-Where P.SEÑA = 0
+Where P.SEï¿½A = 0
