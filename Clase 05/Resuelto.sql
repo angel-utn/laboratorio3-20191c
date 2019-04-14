@@ -2,7 +2,7 @@
 Select count(*) as Cantidad from Productos
 
 --2) La cantidad de productos registrados que requieran se�a.
-Select count(*) as RequierenSe�a from Productos where Se�a = 1 
+Select count(*) as RequierenSe�a from Productos where Seña = 1 
 
 --3) La cantidad de productos que registren un Precio Mayorista
 Select count(*) as CantidadPrecioMayorista from Productos where PVM IS NOT NULL
@@ -123,8 +123,8 @@ Inner Join MATERIALES as M ON M.ID = PR.IDMATERIAL
 Group by C.APELLIDOS, C.NOMBRES, M.NOMBRE
 Order by Cantidad Desc
 
--- 26) La cantidad de clientes distintos que compraron productos que no requieren se�a.
+-- 26) La cantidad de clientes distintos que compraron productos que no requieren seña.
 Select Count(Distinct PE.IdCliente) As Cantidad From Pedidos as PE
 Inner Join Clientes as C ON PE.IDCLIENTE = C.ID
 Inner Join Productos as P ON P.ID = PE.IDPRODUCTO
-Where P.SE�A = 0
+Where P.SEÑA = 0
