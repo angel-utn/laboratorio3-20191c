@@ -1,0 +1,184 @@
+-- A) Listar todos los médicos de sexo femenino.
+SELECT * FROM MEDICOS WHERE SEXO = 'F'
+
+-- B) Listar todos los médicos cuyo apellido finaliza con 'EZ'
+SELECT * FROM MEDICOS WHERE APELLIDO LIKE '%EZ'
+
+-- C) Listar todos los médicos que hayan ingresado a la clínica entre el 1/1/1995 y el 31/12/1999.
+SELECT * FROM MEDICOS WHERE FECHAINGRESO BETWEEN '1/1/1995' AND '31/12/1999'
+
+-- D) Listar todos los médicos que tengan un costo de consulta mayor a $ 650.
+SELECT * FROM MEDICOS WHERE COSTO_CONSULTA > 650
+
+-- E) Listar todos los médicos que tengan una antigüedad mayor a 10 años.
+SELECT * FROM MEDICOS WHERE YEAR(GETDATE()) - YEAR(FECHAINGRESO) > 10
+
+-- F) Listar todos los pacientes que posean la Obra social 'Dasuten'.
+SELECT * FROM PACIENTES AS P INNER JOIN OBRAS_SOCIALES AS OS ON OS.IDOBRASOCIAL = P.IDOBRASOCIAL
+WHERE OS.NOMBRE = 'DASUTEN'
+
+-- G) Listar todos los pacientes que hayan nacido en los meses de Enero, Febrero o Marzo.
+SELECT * FROM PACIENTES WHERE MONTH(FECHANAC) IN (1, 2, 3)
+
+-- H) Listar todos los pacientes que hayan tenido algún turno médico en los últimos 45 días.
+SELECT DISTINCT P.APELLIDO, P.NOMBRE FROM PACIENTES AS P
+INNER JOIN TURNOS AS T ON T.IDPACIENTE = P.IDPACIENTE
+WHERE T.FECHAHORA BETWEEN GETDATE()-45 AND GETDATE()
+
+-- I) Listar todos los pacientes que hayan tenido algún turno con algún médico 
+--con especialidad 'Gastroenterología'.
+SELECT DISTINCT P.APELLIDO, P.NOMBRE FROM PACIENTES AS P
+INNER JOIN TURNOS AS T ON T.IDPACIENTE = P.IDPACIENTE
+INNER JOIN MEDICOS AS M ON M.IDMEDICO = T.IDMEDICO
+INNER JOIN ESPECIALIDADES AS E ON E.IDESPECIALIDAD = M.IDESPECIALIDAD
+WHERE E.NOMBRE LIKE 'GASTROENTEROLOGÍA'
+
+-- J) Listar Apellido, nombre, sexo y especialidad de todos los médicos que
+-- tengan especialidad en algún tipo de 'Análisis'
+SELECT M.APELLIDO, M.NOMBRE, M.SEXO, E.NOMBRE FROM MEDICOS AS M
+INNER JOIN ESPECIALIDADES AS E ON E.IDESPECIALIDAD = M.IDESPECIALIDAD
+WHERE E.NOMBRE LIKE '%ANÁLISIS%'
+
+-- K) Listar Apellido, nombre, sexo y especialidad de todos los médicos que no posean 
+--la especialidad 'Gastroenterología', 'Oftalmologìa', 'Pediatrìa', 'Ginecología' ni 'Oncología'.
+SELECT M.APELLIDO, M.NOMBRE, M.SEXO, E.NOMBRE FROM MEDICOS AS M
+INNER JOIN ESPECIALIDADES AS E ON E.IDESPECIALIDAD = M.IDESPECIALIDAD
+WHERE E.NOMBRE NOT IN ('GASTROENTEROLOGÍA', 'OFTALMOLOGÍA', 'PEDIATRÍA', 'GINECOLOGÍA', 'ONCOLOGÍA')
+
+-- L) Listar por cada turno, la fecha y hora, nombre y apellido del médico, 
+--nombre y apellido del paciente, especialidad del médico, duración del turno, 
+--costo de la consulta sin descuento, obra social del paciente y costo de la 
+--consulta con descuento de la obra social. Ordenar el listado de forma cronológica. 
+--Del último turno al primero.
+SELECT T.FECHAHORA, M.APELLIDO + ', ' + M.NOMBRE AS 'MEDICO', P.APELLIDO + ', ' + P.NOMBRE AS 'PACIENTE',
+E.NOMBRE, T.DURACION, M.COSTO_CONSULTA, OS.NOMBRE, M.COSTO_CONSULTA * (1-OS.COBERTURA) AS 'COSTO DTO'
+FROM TURNOS AS T 
+INNER JOIN PACIENTES AS P ON P.IDPACIENTE = T.IDPACIENTE
+INNER JOIN MEDICOS AS M ON M.IDMEDICO = T.IDMEDICO
+INNER JOIN ESPECIALIDADES AS E ON E.IDESPECIALIDAD = M.IDESPECIALIDAD
+INNER JOIN OBRAS_SOCIALES AS OS ON OS.IDOBRASOCIAL = P.IDOBRASOCIAL
+ORDER BY T.FECHAHORA DESC
+
+-- M) Listar todos los pacientes que no se hayan atendido con ningún médico.
+SELECT * FROM PACIENTES WHERE IDPACIENTE NOT IN (SELECT DISTINCT IDPACIENTE FROM TURNOS)
+
+-- N) Listar por cada año, mes y paciente la cantidad de turnos solicitados. 
+--Del paciente mostrar Apellido y nombre.
+SELECT YEAR(T.FECHAHORA) AS AÑO, MONTH(T.FECHAHORA) AS MES, P.APELLIDO, P.NOMBRE, COUNT(*) AS CANT
+FROM PACIENTES AS P
+INNER JOIN TURNOS AS T ON T.IDPACIENTE = P.IDPACIENTE
+GROUP BY YEAR(T.FECHAHORA), MONTH(T.FECHAHORA), P.APELLIDO, P.NOMBRE
+
+-- Ñ) Listar el/los paciente que haya tenido el turno con mayor duración.
+SELECT * FROM PACIENTES WHERE IDPACIENTE IN ( 
+	SELECT IDPACIENTE FROM TURNOS WHERE DURACION = (
+		SELECT MAX(DURACION) FROM TURNOS	
+	)
+)
+
+-- O) Listar el promedio de duración de un turno que pertenezcan a médicos con 
+-- especialidad 'Pediatría'.
+SELECT AVG(DURACION) AS 'PROM' FROM TURNOS AS T
+INNER JOIN MEDICOS AS M ON T.IDMEDICO = M.IDMEDICO
+INNER JOIN ESPECIALIDADES AS E ON E.IDESPECIALIDAD = M.IDESPECIALIDAD
+WHERE E.NOMBRE = 'PEDIATRÍA'
+
+-- P) Listar por cada médico, el total facturado (sin descuentos) agrupado por año. 
+-- Listar apellido y nombre del médico.
+SELECT M.APELLIDO, M.NOMBRE, M.COSTO_CONSULTA * COUNT(T.IDTURNO) AS FACTURACION
+FROM MEDICOS AS M
+INNER JOIN TURNOS AS T ON T.IDMEDICO = M.IDMEDICO
+GROUP BY M.APELLIDO, M.NOMBRE, M.COSTO_CONSULTA
+
+-- Q) Listar por cada especialidad la cantidad de turnos que se solicitaron en total. 
+--Listar nombre de la especialidad.
+SELECT E.NOMBRE, COUNT(T.IDTURNO) AS 'CANTIDAD' FROM ESPECIALIDADES AS E
+INNER JOIN MEDICOS AS M ON E.IDESPECIALIDAD = M.IDESPECIALIDAD
+INNER JOIN TURNOS AS T ON T.IDMEDICO = M.IDMEDICO
+GROUP BY E.NOMBRE
+
+-- R) Listar por cada obra social, la cantidad de turnos
+SELECT OS.NOMBRE, COUNT(*) AS 'CANT TURNOS'
+FROM OBRAS_SOCIALES AS OS
+INNER JOIN PACIENTES AS P ON P.IDOBRASOCIAL = OS.IDOBRASOCIAL
+INNER JOIN TURNOS AS T ON T.IDPACIENTE = P.IDPACIENTE
+GROUP BY OS.NOMBRE
+
+-- S) Listar todos los médicos que nunca atendieron a pacientes con Obra Social 'Dasuten'.
+SELECT * FROM MEDICOS WHERE IDMEDICO NOT IN
+(
+	SELECT DISTINCT IDMEDICO FROM TURNOS WHERE IDPACIENTE IN (
+		SELECT IDPACIENTE FROM PACIENTES INNER JOIN OBRAS_SOCIALES
+		ON PACIENTES.IDOBRASOCIAL = OBRAS_SOCIALES.IDOBRASOCIAL
+		WHERE OBRAS_SOCIALES.NOMBRE LIKE 'DASUTEN'
+	)
+)
+
+-- T) Listar todos los pacientes que no se atendieron durante todo el año 2015.
+SELECT * FROM PACIENTES WHERE IDPACIENTE NOT IN (
+	SELECT DISTINCT IDPACIENTE FROM TURNOS WHERE YEAR(FECHAHORA) = 2015
+)
+
+-- U) Listar para cada paciente la cantidad de turnos solicitados
+-- con médicos que realizan "Análisis" y la cantidad de turnos solicitados 
+-- con médicos de otras especialidades.
+SELECT P.IDPACIENTE, P.APELLIDO, P.NOMBRE, 
+( 
+	SELECT COUNT(*) FROM TURNOS AS T INNER JOIN MEDICOS AS M ON M.IDMEDICO = T.IDMEDICO
+	INNER JOIN ESPECIALIDADES AS E ON E.IDESPECIALIDAD = M.IDESPECIALIDAD
+	WHERE E.NOMBRE LIKE '%ANÁLISIS%' AND T.IDPACIENTE = P.IDPACIENTE
+) AS ANALISIS,
+(
+SELECT COUNT(*) FROM TURNOS AS T INNER JOIN MEDICOS AS M ON M.IDMEDICO = T.IDMEDICO
+	INNER JOIN ESPECIALIDADES AS E ON E.IDESPECIALIDAD = M.IDESPECIALIDAD
+	WHERE E.NOMBRE NOT LIKE '%ANÁLISIS%' AND T.IDPACIENTE = P.IDPACIENTE
+) AS OTROS
+FROM PACIENTES AS P
+
+-- V) Listar todos los médicos que no atendieron nunca por la mañana. Horario de 08:00 a 12:00.
+SELECT * FROM MEDICOS WHERE IDMEDICO NOT IN (
+	SELECT DISTINCT IDMEDICO FROM TURNOS WHERE DATEPART(HOUR, FECHAHORA) BETWEEN 8 AND 12
+)
+
+-- W) Listar el paciente que más veces se atendió para una misma especialidad.
+SELECT TOP 1 P.APELLIDO, P.NOMBRE, E.NOMBRE, COUNT(*) AS CANTTURNOS
+FROM TURNOS AS T
+INNER JOIN PACIENTES AS P ON P.IDPACIENTE = T.IDPACIENTE
+INNER JOIN MEDICOS AS M ON M.IDMEDICO = T.IDMEDICO
+INNER JOIN ESPECIALIDADES AS E ON E.IDESPECIALIDAD = M.IDESPECIALIDAD
+GROUP BY P.APELLIDO, P.NOMBRE, E.NOMBRE
+ORDER BY 4 DESC
+
+-- X) Listar las obras sociales que tengan más de 10 afiliados en la clínica.
+SELECT OS.NOMBRE, COUNT(*) AS AFILIADOS
+FROM OBRAS_SOCIALES AS OS
+INNER JOIN PACIENTES AS P ON P.IDOBRASOCIAL = OS.IDOBRASOCIAL
+GROUP BY OS.NOMBRE
+HAVING COUNT(*) > 10
+
+-- Y) Listar todos los pacientes que se hayan atendido con médicos de otras especialidades 
+-- pero no se hayan atendido con médicos que realizan "Análisis".
+SELECT * FROM (
+	SELECT P.IDPACIENTE, P.APELLIDO, P.NOMBRE, 
+	( 
+		SELECT COUNT(*) FROM TURNOS AS T INNER JOIN MEDICOS AS M ON M.IDMEDICO = T.IDMEDICO
+		INNER JOIN ESPECIALIDADES AS E ON E.IDESPECIALIDAD = M.IDESPECIALIDAD
+		WHERE E.NOMBRE LIKE '%ANÁLISIS%' AND T.IDPACIENTE = P.IDPACIENTE
+	) AS ANALISIS,
+	(
+	SELECT COUNT(*) FROM TURNOS AS T INNER JOIN MEDICOS AS M ON M.IDMEDICO = T.IDMEDICO
+		INNER JOIN ESPECIALIDADES AS E ON E.IDESPECIALIDAD = M.IDESPECIALIDAD
+		WHERE E.NOMBRE NOT LIKE '%ANÁLISIS%' AND T.IDPACIENTE = P.IDPACIENTE
+	) AS OTROS
+	FROM PACIENTES AS P
+) AS AUX
+WHERE AUX.OTROS >0 AND AUX.ANALISIS = 0
+
+-- Z) Listar todos los pacientes cuyo promedio de duración por turno sea mayor a 20 minutos.
+SELECT P.APELLIDO, P.NOMBRE, AVG(T.DURACION) FROM PACIENTES AS P
+INNER JOIN TURNOS AS T ON P.IDPACIENTE = T.IDPACIENTE
+GROUP BY P.APELLIDO, P.NOMBRE
+HAVING AVG(T.DURACION) > 20
+
+
+
